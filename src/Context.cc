@@ -12,41 +12,49 @@
 using namespace node;
 using namespace v8;
 
-#include <XnOpenNI.h>
+#include <XnCppWrapper.h>
 
 #include "context.h"
 
 namespace nodeopenni {
 
-  Handle<Value>
-  check(XnStatus status) {
-    if (status == XN_STATUS_OK) return Undefined();
+  //// Utils
+  bool
+  hasError(XnStatus status) {
+    return status != XN_STATUS_OK;
+  }
 
+  Handle<Value>
+  error(XnStatus status) {
     return ThrowException(Exception::Error(
       String::New(xnGetStatusString(status))));
   }
+
+  //// Callbacks
+
+  User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie) {
+    printf("New User: %d\n", nId);
+    Context * context = (Context) pCookie;
+    context.GetPoseDetectionCap().StartPoseDetection(POSE_TO_USE,
+                                                             nId);
+  }
+
+  ///// Life-cycle
 
   Context *
   Context::GetContext(const Arguments &args) {
     return ObjectWrap::Unwrap<Context>(args.This());
   }
 
-  Handle<Value>
-  Context::Init() {
-    HandleScope scope;
-    return check(xnInit(&context_));
-  }
-
-
-  Handle<Value>
-  Context::Init(const Arguments& args) {
-    HandleScope scope;
-    return GetContext(args)->Init();
-  }
-
   Context::Context() {
-    this->context_ = NULL;
-    xnContextAddRef(this->context_);
+    //this->context_ = new xn::Context();
+    this->context_.AddRef();
+    this->userGenerator_.Create(this->context_);
+
+    // Register user callbacks
+
+    this->userGenerator_.RegisterUserCallbacks(
+      User_NewUser, User_LostUser,this, h1);
   }
 
   Handle<Value>
@@ -63,9 +71,7 @@ namespace nodeopenni {
 
   void
   Context::Close() {
-    if (this->context_ != NULL) {
-      xnContextRelease(this->context_);
-    }
+    this->context_.Release();
   }
 
   Handle<Value>
@@ -87,7 +93,6 @@ namespace nodeopenni {
     t->InstanceTemplate()->SetInternalFieldCount(1);
 
     NODE_SET_PROTOTYPE_METHOD(t, "close", Close);
-    NODE_SET_PROTOTYPE_METHOD(t, "init", Init);
 
     target->Set(String::NewSymbol("Context"), t->GetFunction());
   }

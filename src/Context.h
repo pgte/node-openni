@@ -4,13 +4,12 @@
 #include <v8.h>
 #include "node.h"
 
-#include <XnOpenNI.h>
+#include <XnCppWrapper.h>
 
 using namespace node;
 using namespace v8;
 
 namespace nodeopenni {
-
 
   class Context : ObjectWrap {
 
@@ -20,11 +19,10 @@ namespace nodeopenni {
       virtual     ~Context   ();
 
     private:
-      XnContextPtr context_;
+      xn::Context context_;
+      xn::UserGenerator userGenerator_;
 
       static Context*       GetContext       (const Arguments &args);
-      Handle<Value>         Init             ();
-      static Handle<Value>  Init             (const Arguments &args);
       void                  Close            ();
       static Handle<Value>  Close            (const Arguments &args);
       static Handle<Value>  New              (const Arguments& args);

@@ -9,7 +9,7 @@
     "tap": "*"
   },
   "scripts": {
-    "test":    "node_modules/.bin/mocha test/*.js"
+    "test":    "node test/base.js"
   },
   "repository": 
    { "type": "git",
