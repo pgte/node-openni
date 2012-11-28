@@ -1,0 +1,17 @@
+{
+  "name": "openni",
+  "description": "Still working on this, wanted to reserve the package name.",
+  "version": "0.1.0",
+  "author": "Pedro Teixeira",
+  "main": "openni.js",
+  "tags": ["kinect", "openni"],
+  "devDependencies": {
+    "tap": "*"
+  },
+  "scripts": {
+    "test":    "node_modules/.bin/mocha test/*.js"
+  },
+  "repository": 
+   { "type": "git",
+     "url": "http://github.com/pgte/node-openni.git" }
+}
