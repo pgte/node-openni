@@ -3,7 +3,8 @@
     {
       'target_name': 'openni',
       'sources': [
-        'src/Context.cc',
+        'src/Callbacks.cc',
+        'src/Context.cc'
       ],
       'include_dirs': [
         '/usr/include/ni'

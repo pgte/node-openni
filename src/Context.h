@@ -14,15 +14,21 @@ namespace nodeopenni {
   class Context : ObjectWrap {
 
     public:
+
+      xn::UserGenerator userGenerator_;
+
       static void Initialize (v8::Handle<v8::Object> target);
                   Context ();
       virtual     ~Context   ();
 
     private:
       xn::Context context_;
-      xn::UserGenerator userGenerator_;
+      XnCallbackHandle userCallbackHandle_;
+      XnCallbackHandle poseCallbackHandle_;
+      XnCallbackHandle calibrationCallbackHandle_;
 
       static Context*       GetContext       (const Arguments &args);
+      Handle<Value>         Init             ();
       void                  Close            ();
       static Handle<Value>  Close            (const Arguments &args);
       static Handle<Value>  New              (const Arguments& args);
