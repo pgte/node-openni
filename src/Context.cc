@@ -17,6 +17,8 @@ using namespace v8;
 #include "Callbacks.h"
 #include "Joints.h"
 
+#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+
 namespace nodeopenni {
 
 
@@ -71,30 +73,47 @@ namespace nodeopenni {
     if (hasError(status)) printError("calling context.WaitAndUpdateAll", status);
 
     XnVector3D position;
+    XnVector3D newPosition;
     XnSkeletonJointPosition jointPos;
+    XnSkeletonJointPosition newJointPos;
+
+
+    /// Poll all joint positions for all available users
 
     for (int i = 0; i < nUsers && i < NODE_OPENNI_MAX_USERS; ++i)
     {
       if (this->userGenerator_.GetSkeletonCap().IsTracking(aUsers[i]))
       {
         for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
+          
+          // Load old values
           jointPos = jointPositions_[i][j];
-          this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
-             aUsers[i], joints[j], jointPos);
-
-          if (jointPos.fConfidence < 0.5) continue;
-
           position = jointPos.position;
+          
+          // Get new values
+          this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
+             aUsers[i], joints[j], newJointPos);
 
-          printf("%d, %d: (%f,%f,%f) [%f]\n", j, aUsers[i],
-                 position.X, position.Y, position.Z,
-                 jointPos.fConfidence);
+          // discard unconfident changes
+          if (newJointPos.fConfidence < 0.5) continue;
 
+          newPosition = newJointPos.position;
 
+          // scan for changes
+          if (round(position.X) != round(newPosition.X) && 
+              round(position.Y) != round(newPosition.Y) && 
+              round(position.Z) != round(newPosition.Z)
+            )
+          {
+            jointPos = newJointPos;
+
+            printf("%s, %d: (%f,%f,%f) [%f]\n", jointNames[j], aUsers[i],
+                   jointPos.position.X, jointPos.position.Y, jointPos.position.Z,
+                   jointPos.fConfidence);
+
+          }
 
         }
-        
-       
       }
     }
   }
@@ -167,6 +186,8 @@ namespace nodeopenni {
 
   Context::Context()
   {
+
+    /// Initialize all joint positions to 0
     for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
     {
       for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
