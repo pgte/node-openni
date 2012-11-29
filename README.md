@@ -9,16 +9,20 @@ Currently only supports one user, even though several users is easy to achieve w
 * Install libusb from http://www.libusb.org/
 * Install OpenNI from https://github.com/OpenNI/OpenNI
 
-# Test
-
 Fork this repo.
+
+```bash
+$ cd node-openni
+$ node-gyp configure build
+```
+
+# Test
 
 Plug in your kinect.
 
 Run:
 
 ```bash
-$ cd node-openni
 $ node test/base
 ```
 
