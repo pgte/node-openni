@@ -6,6 +6,7 @@
 #include "uv.h"
 
 #include <stdio.h>
+#include <strings.h>
 
 using namespace node;
 using namespace v8;
@@ -14,8 +15,10 @@ using namespace v8;
 
 #include "Context.h"
 #include "Callbacks.h"
+#include "Joints.h"
 
 namespace nodeopenni {
+
 
 
   //// Utils
@@ -62,19 +65,36 @@ namespace nodeopenni {
     if (hasError(status)) printError("calling context.WaitAndUpdateAll", status);
     XnUserID aUsers[15];
     XnUInt16 nUsers = 15;
+
     status = this->userGenerator_.GetUsers(aUsers, nUsers);
+    
     if (hasError(status)) printError("calling context.WaitAndUpdateAll", status);
-    for (int i = 0; i < nUsers; ++i)
+
+    XnVector3D position;
+    XnSkeletonJointPosition jointPos;
+
+    for (int i = 0; i < nUsers && i < NODE_OPENNI_MAX_USERS; ++i)
     {
       if (this->userGenerator_.GetSkeletonCap().IsTracking(aUsers[i]))
       {
-        XnSkeletonJointPosition Head;
-        this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
-           aUsers[i], XN_SKEL_HEAD, Head);
+        for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
+          jointPos = jointPositions_[i][j];
+          this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
+             aUsers[i], joints[j], jointPos);
+
+          if (jointPos.fConfidence < 0.5) continue;
+
+          position = jointPos.position;
+
+          printf("%d, %d: (%f,%f,%f) [%f]\n", j, aUsers[i],
+                 position.X, position.Y, position.Z,
+                 jointPos.fConfidence);
+
+
+
+        }
+        
        
-        printf("%d: (%f,%f,%f) [%f]\n", aUsers[i],
-               Head.position.X, Head.position.Y, Head.position.Z,
-               Head.fConfidence);
       }
     }
   }
@@ -121,13 +141,9 @@ namespace nodeopenni {
     if (hasError(status)) return error("setting skeleton profile", status);
     printf("Set skeleton profile.\n");
 
-    status = this->userGenerator_.GetSkeletonCap().RegisterToJointConfigurationChange(
-      Joint_Configuration_Change, this, this->jointConfigurationHandle_);
-    if (hasError(status)) return error("registering to joint configuration change", status);
-
     // Start event loop
-    //uv_loop_t *loop = uv_default_loop();
-    //uv_async_init(loop, &this->uv_async_skel_callback_, async_skel_callback);
+    uv_loop_t *loop = uv_default_loop();
+    //uv_async_init(loop, &this->uv_async_depth_callback_, async_skel_callback);
     this->InitProcessEventThread();
 
     printf("initiated process event thread.\n");
@@ -151,6 +167,15 @@ namespace nodeopenni {
 
   Context::Context()
   {
+    for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
+    {
+      for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
+        jointPositions_[i][j].position.X = 0;
+        jointPositions_[i][j].position.Y = 0;
+        jointPositions_[i][j].position.Z = 0;
+        jointPositions_[i][j].fConfidence = 0;
+      }
+    }
     this->running_ = true;
   }
 

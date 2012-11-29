@@ -9,6 +9,9 @@
 using namespace node;
 using namespace v8;
 
+#define NODE_OPENNI_MAX_USERS 15
+
+
 namespace nodeopenni {
 
   class Context : ObjectWrap {
@@ -30,9 +33,11 @@ namespace nodeopenni {
       XnCallbackHandle poseCallbackHandle_;
       XnCallbackHandle calibrationCallbackHandle_;
       XnCallbackHandle jointConfigurationHandle_;
+
+      XnSkeletonJointPosition jointPositions_[NODE_OPENNI_MAX_USERS][24] ;
       
       uv_thread_t event_thread_;
-      // uv_async_t  uv_async_depth_callback_
+      uv_async_t  uv_async_depth_callback_;
 
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();
