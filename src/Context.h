@@ -6,6 +6,8 @@
 
 #include <XnCppWrapper.h>
 
+#include "Joints.h"
+
 using namespace node;
 using namespace v8;
 
@@ -14,10 +16,13 @@ using namespace v8;
 
 namespace nodeopenni {
 
+
   struct JointPos {
+    void * context;    
     const char * joint;
+    Persistent<String> jointName;
     XnVector3D pos;
-  };
+  };  
 
   class Context : ObjectWrap {
 
@@ -30,6 +35,7 @@ namespace nodeopenni {
                   Context ();
       virtual     ~Context   ();
       void Poll();
+      void JointChangeEvent(void * jointPos);
 
     private:
       
@@ -44,6 +50,8 @@ namespace nodeopenni {
       uv_thread_t event_thread_;
       uv_async_t  uv_async_joint_change_callback_;
 
+      Persistent<String> jointCallbackSymbol;
+
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();
       Handle<Value>         Close            ();
@@ -52,6 +60,9 @@ namespace nodeopenni {
       Context (int user_device_number);
       void InitProcessEventThread();
 
-  };  
+  };
+
+
+
 }
 #endif

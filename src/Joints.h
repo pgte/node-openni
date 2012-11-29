@@ -1,9 +1,14 @@
 #ifndef NODE_OPENNI_JOINTS_H
 #define NODE_OPENNI_JOINTS_H
 
+#include <v8.h>
+
 #define NODE_OPENNI_JOINT_COUNT 24
 
+using namespace v8;
+
 namespace nodeopenni {
+
     const XnSkeletonJoint joints [NODE_OPENNI_JOINT_COUNT] = {
       XN_SKEL_HEAD,
       XN_SKEL_NECK,
@@ -31,7 +36,7 @@ namespace nodeopenni {
       XN_SKEL_RIGHT_FOOT
     };
 
-    const char * jointNames [NODE_OPENNI_JOINT_COUNT] = {
+    static const char * jointNames [NODE_OPENNI_JOINT_COUNT] = {
       "head",
       "neck",
       "torso",

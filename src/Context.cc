@@ -21,9 +21,6 @@ using namespace v8;
 
 namespace nodeopenni {
 
-
-
-
   //// Utils
   bool
   hasError(XnStatus status)
@@ -46,10 +43,40 @@ namespace nodeopenni {
     printf("Error in context %s: %s\n", context, statusStr);
   }
 
+  ///// Joint Change Event Callback
+
+  static void
+  async_joint_change_callback_(uv_async_t *handle, int notUsed)
+  {
+    JointPos * jointPos = (JointPos *) handle->data;
+    assert(jointPos);
+    ((Context *) jointPos->context)->JointChangeEvent(jointPos);
+  }
+
+
+  void
+  Context::JointChangeEvent(void * pos)
+  {
+    JointPos * jointPos = (JointPos *) pos;
+
+    if (jointCallbackSymbol.IsEmpty()) {
+      jointCallbackSymbol = NODE_PSYMBOL("emit");
+    }
+    Local<Value> callback_v =handle_->Get(jointCallbackSymbol);
+    if (!callback_v->IsFunction()) {
+      ThrowException(Exception::Error(String::New("emit should be a function")));
+    }
+    Local<Function> callback = Local<Function>::Cast(callback_v);
+    Handle<Value> argv[4] = { jointPos->jointName, Number::New(jointPos->pos.X), Number::New(jointPos->pos.Y), Number::New(jointPos->pos.Z) };
+    callback->Call(handle_, 4, argv);
+  }
+
+
   ///// Event Loop
 
   void
-  process_event_thread(void *arg) {
+  process_event_thread(void *arg)
+  {
     Context * context = (Context *) arg;
     while(context->running_) {
       context->Poll();
@@ -57,11 +84,14 @@ namespace nodeopenni {
   }
 
   void
-  Context::InitProcessEventThread() {
+  Context::InitProcessEventThread() 
+  {
     uv_thread_create(&this->event_thread_, process_event_thread, this);
   }
 
-  void Context::Poll() {
+  void
+  Context::Poll()
+  {
     XnStatus status;
 
     status = this->context_.WaitAndUpdateAll();
@@ -108,11 +138,11 @@ namespace nodeopenni {
             jointPos.pos = newJointPos.position;
 
             this->uv_async_joint_change_callback_.data = (void *) &jointPos;
-            //uv_async_send(&this->uv_async_joint_change_callback_);
+            uv_async_send(&this->uv_async_joint_change_callback_);
 
-            printf("%s, %d: (%f,%f,%f) [%f]\n", jointPos.joint, aUsers[i],
-                   jointPos.pos.X, jointPos.pos.Y, jointPos.pos.Z,
-                   newJointPos.fConfidence);
+            // printf("%s, %d: (%f,%f,%f) [%f]\n", jointPos.joint, aUsers[i],
+            //        jointPos.pos.X, jointPos.pos.Y, jointPos.pos.Z,
+            //        newJointPos.fConfidence);
 
           }
 
@@ -165,7 +195,7 @@ namespace nodeopenni {
 
     // Start event loop
     uv_loop_t *loop = uv_default_loop();
-    //uv_async_init(loop, &this->uv_async_depth_callback_, async_skel_callback);
+    uv_async_init(loop, &this->uv_async_joint_change_callback_, async_joint_change_callback_);
     this->InitProcessEventThread();
 
     printf("initiated process event thread.\n");
@@ -198,6 +228,8 @@ namespace nodeopenni {
         jointPositions_[i][j].pos.Y = 0;
         jointPositions_[i][j].pos.Z = 0;
         jointPositions_[i][j].joint = jointNames[j];
+        jointPositions_[i][j].jointName = Persistent<String>::New(String::New(jointNames[j]));
+        jointPositions_[i][j].context = this;
       }
     }
     this->running_ = true;
