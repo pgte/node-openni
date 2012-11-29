@@ -12,7 +12,7 @@ module.exports = function(options) {
 
   var oldClose = kContext.close;
   kContext.close = function() {
-    console.log('Closing...');
+    console.log('\nClosing...\n');
     clearInterval(keepRunning);
     oldClose.apply(kContext, arguments);
   }
