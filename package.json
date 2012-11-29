@@ -5,9 +5,6 @@
   "author": "Pedro Teixeira",
   "main": "openni.js",
   "tags": ["kinect", "openni"],
-  "devDependencies": {
-    "tap": "*"
-  },
   "scripts": {
     "test":    "node test/base.js"
   },
