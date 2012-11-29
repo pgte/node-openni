@@ -16,10 +16,13 @@ using namespace v8;
 #include "Context.h"
 #include "Callbacks.h"
 #include "Joints.h"
+#include "Conf.h"
 
 #define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 
 namespace nodeopenni {
+
+  char * xmConf = "";
 
   //// Utils
   bool
@@ -163,8 +166,8 @@ namespace nodeopenni {
 
     printf("Initialized.\n");
 
-    status = this->context_.RunXmlScriptFromFile(
-      "conf/Conf.xml");
+    printf("Using XML conf: %s", XMLConf);
+    status = this->context_.RunXmlScript(XMLConf);
     if (hasError(status)) return error("running XML script", status);
     printf("Ran XML script from file.\n");
 
