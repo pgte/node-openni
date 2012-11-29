@@ -3,6 +3,8 @@ var test = require('tap').test;
 
 test('Initializes and shuts down', function(t) {
   var context = OpenNI();
-  context.close();
-  t.end();
+  setTimeout(function() {
+    context.close();
+    t.end();
+  }, 10000);
 });
