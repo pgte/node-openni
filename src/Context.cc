@@ -23,6 +23,7 @@ namespace nodeopenni {
 
 
 
+
   //// Utils
   bool
   hasError(XnStatus status)
@@ -72,11 +73,10 @@ namespace nodeopenni {
     
     if (hasError(status)) printError("calling context.WaitAndUpdateAll", status);
 
+    JointPos   jointPos;
     XnVector3D position;
     XnVector3D newPosition;
-    XnSkeletonJointPosition jointPos;
     XnSkeletonJointPosition newJointPos;
-
 
     /// Poll all joint positions for all available users
 
@@ -88,7 +88,7 @@ namespace nodeopenni {
           
           // Load old values
           jointPos = jointPositions_[i][j];
-          position = jointPos.position;
+          position = jointPos.pos;
           
           // Get new values
           this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
@@ -105,11 +105,14 @@ namespace nodeopenni {
               round(position.Z) != round(newPosition.Z)
             )
           {
-            jointPos = newJointPos;
+            jointPos.pos = newJointPos.position;
 
-            printf("%s, %d: (%f,%f,%f) [%f]\n", jointNames[j], aUsers[i],
-                   jointPos.position.X, jointPos.position.Y, jointPos.position.Z,
-                   jointPos.fConfidence);
+            this->uv_async_joint_change_callback_.data = (void *) &jointPos;
+            //uv_async_send(&this->uv_async_joint_change_callback_);
+
+            printf("%s, %d: (%f,%f,%f) [%f]\n", jointPos.joint, aUsers[i],
+                   jointPos.pos.X, jointPos.pos.Y, jointPos.pos.Z,
+                   newJointPos.fConfidence);
 
           }
 
@@ -191,10 +194,10 @@ namespace nodeopenni {
     for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
     {
       for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
-        jointPositions_[i][j].position.X = 0;
-        jointPositions_[i][j].position.Y = 0;
-        jointPositions_[i][j].position.Z = 0;
-        jointPositions_[i][j].fConfidence = 0;
+        jointPositions_[i][j].pos.X = 0;
+        jointPositions_[i][j].pos.Y = 0;
+        jointPositions_[i][j].pos.Z = 0;
+        jointPositions_[i][j].joint = jointNames[j];
       }
     }
     this->running_ = true;

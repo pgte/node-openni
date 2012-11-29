@@ -14,6 +14,11 @@ using namespace v8;
 
 namespace nodeopenni {
 
+  struct JointPos {
+    const char * joint;
+    XnVector3D pos;
+  };
+
   class Context : ObjectWrap {
 
     public:
@@ -34,10 +39,10 @@ namespace nodeopenni {
       XnCallbackHandle calibrationCallbackHandle_;
       XnCallbackHandle jointConfigurationHandle_;
 
-      XnSkeletonJointPosition jointPositions_[NODE_OPENNI_MAX_USERS][24] ;
+      JointPos jointPositions_[NODE_OPENNI_MAX_USERS][24] ;
       
       uv_thread_t event_thread_;
-      uv_async_t  uv_async_depth_callback_;
+      uv_async_t  uv_async_joint_change_callback_;
 
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();
