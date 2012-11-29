@@ -14,6 +14,7 @@ namespace nodeopenni {
   class Context : ObjectWrap {
 
     public:
+      
       bool running_;
       xn::UserGenerator userGenerator_;
 
@@ -23,11 +24,15 @@ namespace nodeopenni {
       void Poll();
 
     private:
+      
       xn::Context context_;
       XnCallbackHandle userCallbackHandle_;
       XnCallbackHandle poseCallbackHandle_;
       XnCallbackHandle calibrationCallbackHandle_;
+      XnCallbackHandle jointConfigurationHandle_;
+      
       uv_thread_t event_thread_;
+      // uv_async_t  uv_async_depth_callback_
 
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();

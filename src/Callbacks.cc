@@ -54,10 +54,16 @@ namespace nodeopenni {
     else
     {
       printf("Failed to calibrate user %d\n", nId);
-     context->userGenerator_.GetPoseDetectionCap().StartPoseDetection(
-       POSE_TO_USE,
-       nId);
+      context->userGenerator_.GetPoseDetectionCap().StartPoseDetection(
+        POSE_TO_USE,
+        nId);
     }
+  }
+
+  void XN_CALLBACK_TYPE
+  Joint_Configuration_Change(xn::ProductionNode &node, void* pCookie)
+  {
+    printf("joint configuration change\n");
   }
 
 }

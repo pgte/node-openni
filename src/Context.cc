@@ -71,6 +71,7 @@ namespace nodeopenni {
         XnSkeletonJointPosition Head;
         this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
            aUsers[i], XN_SKEL_HEAD, Head);
+       
         printf("%d: (%f,%f,%f) [%f]\n", aUsers[i],
                Head.position.X, Head.position.Y, Head.position.Z,
                Head.fConfidence);
@@ -120,15 +121,22 @@ namespace nodeopenni {
     if (hasError(status)) return error("setting skeleton profile", status);
     printf("Set skeleton profile.\n");
 
+    status = this->userGenerator_.GetSkeletonCap().RegisterToJointConfigurationChange(
+      Joint_Configuration_Change, this, this->jointConfigurationHandle_);
+    if (hasError(status)) return error("registering to joint configuration change", status);
+
+    // Start event loop
+    //uv_loop_t *loop = uv_default_loop();
+    //uv_async_init(loop, &this->uv_async_skel_callback_, async_skel_callback);
+    this->InitProcessEventThread();
+
+    printf("initiated process event thread.\n");
+
     status = this->context_.StartGeneratingAll();
     if (hasError(status)) return error("starting to generate all", status);
 
     printf("Started generating all.\n");
 
-    // Start event loop
-    this->InitProcessEventThread();
-
-    printf("initiated process event thread.\n");
 
     return Undefined();
   }
@@ -170,8 +178,6 @@ namespace nodeopenni {
   Handle<Value>
   Context::Close()
   {
-    XnStatus status;
-
     /// Stop the loop
     this->running_ = false;
     

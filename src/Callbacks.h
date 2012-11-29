@@ -21,6 +21,9 @@ namespace nodeopenni {
   void XN_CALLBACK_TYPE
   Calibration_End(xn::SkeletonCapability& capability, XnUserID nId,
                   XnBool bSuccess, void* pCookie);
+
+  void XN_CALLBACK_TYPE
+  Joint_Configuration_Change(xn::ProductionNode &node, void* pCookie);
 }
 
 #endif
