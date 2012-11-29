@@ -22,7 +22,7 @@ $ cd node-openni
 $ node test/base
 ```
 
-Stay in the surrender position in front of the camera, 1 couple of meters away.
+Stay in the surrender position in front of the camera, a couple of meters away.
 After you're synced you should see 
 
 # Use
