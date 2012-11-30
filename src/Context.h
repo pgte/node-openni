@@ -11,7 +11,7 @@
 using namespace node;
 using namespace v8;
 
-#define NODE_OPENNI_MAX_USERS 15
+#define NODE_OPENNI_MAX_USERS 3
 
 
 namespace nodeopenni {
@@ -22,6 +22,8 @@ namespace nodeopenni {
     const char * joint;
     Persistent<String> jointName;
     XnVector3D pos;
+    uint user;
+    bool firing;
   };  
 
   class Context : ObjectWrap {
@@ -45,10 +47,10 @@ namespace nodeopenni {
       XnCallbackHandle calibrationCallbackHandle_;
       XnCallbackHandle jointConfigurationHandle_;
 
-      JointPos jointPositions_[NODE_OPENNI_MAX_USERS][24] ;
+      JointPos jointPositions_[NODE_OPENNI_MAX_USERS][NODE_OPENNI_JOINT_COUNT] ;
       
       uv_thread_t event_thread_;
-      uv_async_t  uv_async_joint_change_callback_;
+      uv_async_t  uv_async_joint_change_callback_[NODE_OPENNI_MAX_USERS][NODE_OPENNI_JOINT_COUNT];
 
       Persistent<String> jointCallbackSymbol;
 

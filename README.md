@@ -63,8 +63,8 @@ var context = OpenNI();
   "right_foot"
 ].forEach(function(jointName) {
   
-  context.on(jointName, function(x, y, z) {
-    cconsole.log(jointName + ' moved to (%d, %d, %d)', x, y, z);
+  context.on(jointName, function(user, x, y, z) {
+    console.log(jointName + ' if user %d moved to (%d, %d, %d)', user, x, y, z);
   });
 
 });

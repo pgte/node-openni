@@ -70,8 +70,10 @@ namespace nodeopenni {
       ThrowException(Exception::Error(String::New("emit should be a function")));
     }
     Local<Function> callback = Local<Function>::Cast(callback_v);
-    Handle<Value> argv[4] = { jointPos->jointName, Number::New(jointPos->pos.X), Number::New(jointPos->pos.Y), Number::New(jointPos->pos.Z) };
-    callback->Call(handle_, 4, argv);
+    Handle<Value> argv[5] = { jointPos->jointName, Number::New(jointPos->user), Number::New(jointPos->pos.X), Number::New(jointPos->pos.Y), Number::New(jointPos->pos.Z) };
+    callback->Call(handle_, 5, argv);
+
+    jointPos->firing = FALSE;
   }
 
 
@@ -106,12 +108,11 @@ namespace nodeopenni {
     
     if (hasError(status)) printError("calling context.WaitAndUpdateAll", status);
 
-    JointPos   jointPos;
-    XnVector3D position;
-    XnVector3D newPosition;
-    XnSkeletonJointPosition newJointPos;
-
     /// Poll all joint positions for all available users
+
+    JointPos   *jointPos;
+    XnSkeletonJointPosition newJointPos;
+    uv_async_t * callback;
 
     for (int i = 0; i < nUsers && i < NODE_OPENNI_MAX_USERS; ++i)
     {
@@ -120,8 +121,16 @@ namespace nodeopenni {
         for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
           
           // Load old values
-          jointPos = jointPositions_[i][j];
-          position = jointPos.pos;
+          jointPos = &jointPositions_[i][j];
+
+          // Skip if we're already firing this one
+          if (jointPos->firing) continue;
+
+          callback = &this->uv_async_joint_change_callback_[i][j];
+          callback->data = (void *) jointPos;
+
+          // Skip if the callback is pending delivery
+          if (callback->pending) continue;
           
           // Get new values
           this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
@@ -130,24 +139,21 @@ namespace nodeopenni {
           // discard unconfident changes
           if (newJointPos.fConfidence < 0.5) continue;
 
-          newPosition = newJointPos.position;
+          // Discard 0 values (???)
+          // TODO: check if this is really necessary...
+          //if (newJointPos.position.X == 0 && newJointPos.position.Y == 0 && newJointPos.position.Z == 0) continue;
 
-          // scan for changes
-          if (round(position.X) != round(newPosition.X) && 
-              round(position.Y) != round(newPosition.Y) && 
-              round(position.Z) != round(newPosition.Z)
-            )
-          {
-            jointPos.pos = newJointPos.position;
+          jointPos->pos.X = newJointPos.position.X;
+          jointPos->pos.Y = newJointPos.position.Y;
+          jointPos->pos.Z = newJointPos.position.Z;
 
-            this->uv_async_joint_change_callback_.data = (void *) &jointPos;
-            uv_async_send(&this->uv_async_joint_change_callback_);
+          jointPos->firing = TRUE;
+          uv_async_send(callback);
 
-            // printf("%s, %d: (%f,%f,%f) [%f]\n", jointPos.joint, aUsers[i],
-            //        jointPos.pos.X, jointPos.pos.Y, jointPos.pos.Z,
-            //        newJointPos.fConfidence);
+          // printf("%s, %d: (%f,%f,%f) [%f]\n", jointPos.joint, aUsers[i],
+          //        jointPos.pos.X, jointPos.pos.Y, jointPos.pos.Z,
+          //        newJointPos.fConfidence);
 
-          }
 
         }
       }
@@ -196,9 +202,16 @@ namespace nodeopenni {
     if (hasError(status)) return error("setting skeleton profile", status);
     printf("Set skeleton profile.\n");
 
-    // Start event loop
+    ////// ---- Start event loop
+    
+    // Initialize the async callbacks
     uv_loop_t *loop = uv_default_loop();
-    uv_async_init(loop, &this->uv_async_joint_change_callback_, async_joint_change_callback_);
+    for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
+    {
+      for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
+        uv_async_init(loop, &this->uv_async_joint_change_callback_[i][j], async_joint_change_callback_);
+      }
+    }
     this->InitProcessEventThread();
 
     printf("initiated process event thread.\n");
@@ -227,12 +240,14 @@ namespace nodeopenni {
     for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
     {
       for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
+        jointPositions_[i][j].user = i;
         jointPositions_[i][j].pos.X = 0;
         jointPositions_[i][j].pos.Y = 0;
         jointPositions_[i][j].pos.Z = 0;
         jointPositions_[i][j].joint = jointNames[j];
         jointPositions_[i][j].jointName = Persistent<String>::New(String::New(jointNames[j]));
         jointPositions_[i][j].context = this;
+        jointPositions_[i][j].firing = FALSE;
       }
     }
     this->running_ = true;
@@ -268,6 +283,8 @@ namespace nodeopenni {
     /// Shut down and release context
     this->context_.Shutdown();
     this->context_.Release();
+
+    uv_thread_join(&this->event_thread_);
     
     return Undefined();
   }
