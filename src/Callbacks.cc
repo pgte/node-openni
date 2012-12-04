@@ -14,6 +14,8 @@ namespace nodeopenni {
   {
     printf("New User: %d\n", nId);
     Context * context = (Context *) pCookie;
+    assert(context);
+    context->UserEventAsync("newuser", nId);
     context->userGenerator_.GetPoseDetectionCap().StartPoseDetection(POSE_TO_USE, nId);
   }
 
@@ -21,7 +23,10 @@ namespace nodeopenni {
   User_LostUser(xn::UserGenerator& generator, XnUserID nId,
                 void* pCookie)
   {
+    Context * context = (Context *) pCookie;
+    assert(context);
     printf("Lost user %d\n", nId);
+    context->UserEventAsync("lostuser", nId);
   }
 
   void XN_CALLBACK_TYPE
@@ -30,6 +35,8 @@ namespace nodeopenni {
   {
     printf("Pose %s for user %d\n", strPose, nId);
     Context * context = (Context *) pCookie;
+    assert(context);
+    context->UserEventAsync("posedetected", nId);
     context->userGenerator_.GetPoseDetectionCap().StopPoseDetection(nId);
     context->userGenerator_.GetSkeletonCap().RequestCalibration(nId, TRUE);
   }
@@ -38,6 +45,9 @@ namespace nodeopenni {
   Calibration_Start(xn::SkeletonCapability& capability, XnUserID nId,
                     void* pCookie)
   {
+    Context * context = (Context *) pCookie;
+    assert(context);
+    context->UserEventAsync("calibrationstart", nId);
     printf("Starting calibration for user %d\n", nId);
   }
 
@@ -46,24 +56,21 @@ namespace nodeopenni {
                   XnBool bSuccess, void* pCookie)
   {
     Context * context = (Context *) pCookie;
+    assert(context);
     if (bSuccess)
     {
+      context->UserEventAsync("calibrationsuccess", nId);
       printf("User calibrated\n");
       context->userGenerator_.GetSkeletonCap().StartTracking(nId);
     }
     else
     {
       printf("Failed to calibrate user %d\n", nId);
+      context->UserEventAsync("calibrationfail", nId);
       context->userGenerator_.GetPoseDetectionCap().StartPoseDetection(
         POSE_TO_USE,
         nId);
     }
-  }
-
-  void XN_CALLBACK_TYPE
-  Joint_Configuration_Change(xn::ProductionNode &node, void* pCookie)
-  {
-    printf("joint configuration change\n");
   }
 
 }

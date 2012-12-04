@@ -26,6 +26,18 @@ namespace nodeopenni {
     bool firing;
   };  
 
+  struct OpenNIError {
+    const char * contextMessage;
+    const char * message;
+    void * context;
+  };
+
+  struct UserEvent {
+    const char * type;
+    uint userId;
+    void * context;
+  };
+
   class Context : ObjectWrap {
 
     public:
@@ -38,6 +50,9 @@ namespace nodeopenni {
       virtual     ~Context   ();
       void Poll();
       void JointChangeEvent(void * jointPos);
+      void UserEventAsync(const char * eventName, uint userId);
+      void EmitUserEvent(UserEvent * userEvent);
+      void EmitError(const char * message);
 
     private:
       
@@ -48,11 +63,14 @@ namespace nodeopenni {
       XnCallbackHandle jointConfigurationHandle_;
 
       JointPos jointPositions_[NODE_OPENNI_MAX_USERS][NODE_OPENNI_JOINT_COUNT] ;
+      OpenNIError lastError_;
       
       uv_thread_t event_thread_;
       uv_async_t  uv_async_joint_change_callback_[NODE_OPENNI_MAX_USERS][NODE_OPENNI_JOINT_COUNT];
+      uv_async_t  uv_async_error_callback_;
+      uv_async_t  uv_async_user_event_callback_;
 
-      Persistent<String> jointCallbackSymbol;
+      Persistent<String> emitSymbol_;
 
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();
@@ -60,6 +78,7 @@ namespace nodeopenni {
       static Handle<Value>  Close            (const Arguments &args);
       static Handle<Value>  New              (const Arguments& args);
       Context (int user_device_number);
+      void EmitAsyncError(char * context, XnStatus status);
       void InitProcessEventThread();
 
   };

@@ -40,11 +40,80 @@ namespace nodeopenni {
       String::New(statusStr)));
   }
 
-  void printError(char * context, XnStatus status)
+  void
+  printError(char * context, XnStatus status)
   {
     const XnChar * statusStr = xnGetStatusString(status);
     printf("Error in context %s: %s\n", context, statusStr);
   }
+
+  /// Pipe an error into the main loop
+  void
+  Context::EmitAsyncError(char * context, XnStatus status)
+  {
+    const XnChar * statusStr = xnGetStatusString(status);
+    uv_async_t * callback = &this->uv_async_error_callback_;
+    this->lastError_.contextMessage = context;
+    this->lastError_.message = statusStr;
+    callback->data = & this->lastError_;
+    uv_async_send(callback);
+    printError(context, status);
+  };
+
+  ///// Error Callback
+
+  void
+  Context::EmitError(const char * error)
+  {
+    Local<Value> callback_v = handle_->Get(this->emitSymbol_);
+    Local<Function> callback = Local<Function>::Cast(callback_v);
+    Handle<Value> argv[2] = { String::New("error"),  Exception::Error(String::New(error))};
+    callback->Call(handle_, 2, argv);
+  }
+
+  static void
+  async_error_callback_(uv_async_t *handle, int notUsed)
+  {
+    OpenNIError * error = (OpenNIError *) handle->data;
+    assert(error);
+    nodeopenni::Context * context = (nodeopenni::Context * ) error->context;
+    assert(context);
+    context->EmitError(error->message);
+  }
+
+  ///// User Events
+
+  void
+  Context::UserEventAsync(const char * eventType, uint userId)
+  {
+    UserEvent * ev = (UserEvent *) malloc(sizeof(UserEvent));
+    ev->type = eventType;
+    ev->userId = userId;
+    ev->context = this;
+    this->uv_async_user_event_callback_.data = ev;
+    uv_async_send(&this->uv_async_user_event_callback_);
+  }
+
+  static void
+  async_user_event_callback_(uv_async_t *handle, int notUsed)
+  {
+    UserEvent * event = (UserEvent *) handle->data;
+    assert(event);
+    nodeopenni::Context * context = (nodeopenni::Context * ) event->context;
+    assert(context);
+    context->EmitUserEvent(event);
+    free(event);
+  }
+
+  void
+  Context::EmitUserEvent(UserEvent * event)
+  {
+    Local<Value> callback_v = handle_->Get(this->emitSymbol_);
+    Local<Function> callback = Local<Function>::Cast(callback_v);
+    Handle<Value> argv[2] = { String::New(event->type),  Number::New(event->userId)};
+    callback->Call(handle_, 2, argv);
+  }
+
 
   ///// Joint Change Event Callback
 
@@ -62,13 +131,7 @@ namespace nodeopenni {
   {
     JointPos * jointPos = (JointPos *) pos;
 
-    if (jointCallbackSymbol.IsEmpty()) {
-      jointCallbackSymbol = NODE_PSYMBOL("emit");
-    }
-    Local<Value> callback_v =handle_->Get(jointCallbackSymbol);
-    if (!callback_v->IsFunction()) {
-      ThrowException(Exception::Error(String::New("emit should be a function")));
-    }
+    Local<Value> callback_v =handle_->Get(this->emitSymbol_);
     Local<Function> callback = Local<Function>::Cast(callback_v);
     Handle<Value> argv[5] = { jointPos->jointName, Number::New(jointPos->user), Number::New(jointPos->pos.X), Number::New(jointPos->pos.Y), Number::New(jointPos->pos.Z) };
     callback->Call(handle_, 5, argv);
@@ -100,13 +163,19 @@ namespace nodeopenni {
     XnStatus status;
 
     status = this->context_.WaitAndUpdateAll();
-    if (hasError(status)) printError("calling context.WaitAndUpdateAll", status);
+    if (hasError(status)) {
+      this->EmitAsyncError("calling context.WaitAndUpdateAll", status);
+      return;
+    }
     XnUserID aUsers[15];
     XnUInt16 nUsers = 15;
 
     status = this->userGenerator_.GetUsers(aUsers, nUsers);
     
-    if (hasError(status)) printError("calling context.WaitAndUpdateAll", status);
+    if (hasError(status)) {
+      this->EmitAsyncError("getting users", status);
+      return;
+    }
 
     /// Poll all joint positions for all available users
 
@@ -136,6 +205,8 @@ namespace nodeopenni {
           this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
              aUsers[i], joints[j], newJointPos);
 
+          if (hasError(status)) return;
+
           // discard unconfident changes
           if (newJointPos.fConfidence < 0.5) continue;
 
@@ -149,11 +220,6 @@ namespace nodeopenni {
 
           jointPos->firing = TRUE;
           uv_async_send(callback);
-
-          // printf("%s, %d: (%f,%f,%f) [%f]\n", jointPos.joint, aUsers[i],
-          //        jointPos.pos.X, jointPos.pos.Y, jointPos.pos.Z,
-          //        newJointPos.fConfidence);
-
 
         }
       }
@@ -196,7 +262,7 @@ namespace nodeopenni {
       Calibration_Start, Calibration_End, this, this->calibrationCallbackHandle_);
     if (hasError(status)) return error("registering calibration callbacks", status);
 
-    printf("registered callbacks.\n");
+    printf("Registered OpenNI callbacks.\n");
 
     status = this->userGenerator_.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
     if (hasError(status)) return error("setting skeleton profile", status);
@@ -204,14 +270,29 @@ namespace nodeopenni {
 
     ////// ---- Start event loop
     
-    // Initialize the async callbacks
+    //// Initialize the async callbacks
+
     uv_loop_t *loop = uv_default_loop();
+
+
+    // Initialize the user event callback
+
+    uv_async_init(loop, &uv_async_user_event_callback_, async_user_event_callback_);
+
+    // Initialize the async error callback
+
+    uv_async_init(loop, &this->uv_async_error_callback_, async_error_callback_);
+
+    /// Initialize the async joint callbacks
+
     for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
     {
       for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
         uv_async_init(loop, &this->uv_async_joint_change_callback_[i][j], async_joint_change_callback_);
       }
     }
+
+    // Start the event polling thread
     this->InitProcessEventThread();
 
     printf("initiated process event thread.\n");
@@ -236,6 +317,8 @@ namespace nodeopenni {
   Context::Context()
   {
 
+    this->emitSymbol_ = NODE_PSYMBOL("emit");
+
     /// Initialize all joint positions to 0
     for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
     {
@@ -250,6 +333,11 @@ namespace nodeopenni {
         jointPositions_[i][j].firing = FALSE;
       }
     }
+
+    // Initialize Error
+    this->lastError_.context = this;
+    this->lastError_.message = NULL;
+
     this->running_ = true;
   }
 
