@@ -323,7 +323,7 @@ namespace nodeopenni {
     for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
     {
       for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
-        jointPositions_[i][j].user = i;
+        jointPositions_[i][j].user = i + 1;
         jointPositions_[i][j].pos.X = 0;
         jointPositions_[i][j].pos.Y = 0;
         jointPositions_[i][j].pos.Z = 0;
