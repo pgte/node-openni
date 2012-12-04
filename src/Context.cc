@@ -152,7 +152,7 @@ namespace nodeopenni {
   }
 
   void
-  Context::InitProcessEventThread() 
+  Context::InitPollThread() 
   {
     uv_thread_create(&this->event_thread_, process_event_thread, this);
   }
@@ -282,7 +282,7 @@ namespace nodeopenni {
     if (hasError(status)) return error("setting skeleton profile", status);
     printf("Set skeleton profile.\n");
 
-    ////// ---- Start event loop
+    ////// ---- Initialize Poll Loop
     
     //// Initialize the async callbacks
 
@@ -307,9 +307,9 @@ namespace nodeopenni {
     }
 
     // Start the event polling thread
-    this->InitProcessEventThread();
+    this->InitPollThread();
 
-    printf("initiated process event thread.\n");
+    printf("initiated poll thread.\n");
 
     status = this->context_.StartGeneratingAll();
     if (hasError(status)) return error("starting to generate all", status);

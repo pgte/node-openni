@@ -84,7 +84,7 @@ namespace nodeopenni {
       static Handle<Value>  New              (const Arguments& args);
       Context (int user_device_number);
       void EmitAsyncError(char * context, XnStatus status);
-      void InitProcessEventThread();
+      void InitPollThread();
 
   };
 
