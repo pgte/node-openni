@@ -41,6 +41,7 @@ var context = OpenNI();
 
 ## Register for user events:
 
+```js
 [
   'newuser',
   'lostuser',
