@@ -31,11 +31,33 @@ After you're synced you should see
 
 # Use
 
+## Create Context
+
 ```js
 var OpenNI = require('openni');
 
 var context = OpenNI();
+```
 
+## Register for user events:
+
+[
+  'newuser',
+  'lostuser',
+  'posedetected',
+  'calibrationstart',
+  'calibrationsucceed',
+  'calibrationfail'
+].forEach(function(eventType) {
+  context.on(eventType, function(userId) {
+    console.log('User %d emitted event: %s', userId, eventType);
+  });
+});
+```
+
+## Register for joint events
+
+```js
 [
   "head",
   "neck",
@@ -69,11 +91,13 @@ var context = OpenNI();
 
 });
 
+## Close Context
+
+```js
 // Close the context to exit
 
 process.on('SIGINT', function() {
   context.close();
   process.exit();  
 });
-
 ```
