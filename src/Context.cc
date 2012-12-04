@@ -306,7 +306,7 @@ namespace nodeopenni {
       }
     }
 
-    // Start the event polling thread
+    // Start the joint pos polling thread
     this->InitPollThread();
 
     printf("initiated poll thread.\n");
