@@ -185,7 +185,7 @@ namespace nodeopenni {
 
     for (int i = 0; i < nUsers && i < NODE_OPENNI_MAX_USERS; ++i)
     {
-      if (this->userGenerator_.GetSkeletonCap().IsTracking(aUsers[i]))
+      if (this->users_[aUsers[i]])
       {
         for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
           
@@ -224,6 +224,20 @@ namespace nodeopenni {
         }
       }
     }
+  }
+
+  ///// User Count
+
+  void
+  Context::AddUser(uint userId)
+  {
+    this->users_[userId] = TRUE;
+  }
+
+  void
+  Context::RemoveUser(uint userId)
+  {
+    this->users_[userId] = FALSE;
   }
 
   ///// Initialization
@@ -333,6 +347,12 @@ namespace nodeopenni {
         jointPositions_[i][j].firing = FALSE;
       }
     }
+
+    // Initialize user presence
+    for (int i = 0; i <= NODE_OPENNI_MAX_USERS; ++i)
+    {
+      this->users_[i] = FALSE;
+    }    
 
     // Initialize Error
     this->lastError_.context = this;

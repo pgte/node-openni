@@ -15,6 +15,7 @@ namespace nodeopenni {
     printf("New User: %d\n", nId);
     Context * context = (Context *) pCookie;
     assert(context);
+    context->AddUser(nId);
     context->UserEventAsync("newuser", nId);
     context->userGenerator_.GetPoseDetectionCap().StartPoseDetection(POSE_TO_USE, nId);
   }
@@ -25,6 +26,7 @@ namespace nodeopenni {
   {
     Context * context = (Context *) pCookie;
     assert(context);
+    context->RemoveUser(nId);
     printf("Lost user %d\n", nId);
     context->UserEventAsync("lostuser", nId);
   }

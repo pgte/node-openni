@@ -53,6 +53,8 @@ namespace nodeopenni {
       void UserEventAsync(const char * eventName, uint userId);
       void EmitUserEvent(UserEvent * userEvent);
       void EmitError(const char * message);
+      void AddUser(uint userId);
+      void RemoveUser(uint userId);
 
     private:
       
@@ -70,7 +72,10 @@ namespace nodeopenni {
       uv_async_t  uv_async_error_callback_;
       uv_async_t  uv_async_user_event_callback_;
 
+      bool        users_[NODE_OPENNI_MAX_USERS + 1];
+
       Persistent<String> emitSymbol_;
+
 
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();
