@@ -61,7 +61,7 @@ namespace nodeopenni {
       "right_knee",
       "right_ankle",
       "right_foot"
-    };      
+    };
 }
 
 #endif

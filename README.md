@@ -103,3 +103,15 @@ process.on('SIGINT', function() {
   process.exit();  
 });
 ```
+
+## Specify Joints
+
+You can specify exactly which joints you want to be tracked:
+
+```js
+context.setJoints(['head', 'left_hand', 'right_hand']);
+```
+
+# Licence
+
+MIT

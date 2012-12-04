@@ -73,12 +73,16 @@ namespace nodeopenni {
       uv_async_t  uv_async_user_event_callback_;
 
       bool        users_[NODE_OPENNI_MAX_USERS + 1];
+      bool        joints_[NODE_OPENNI_JOINT_COUNT];
 
       Persistent<String> emitSymbol_;
+      Persistent<String> lengthSymbol_;
 
 
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();
+      Handle<Value>         SetJoints        (Local<Object>  array);
+      static Handle<Value>  SetJoints        (const Arguments &args);
       Handle<Value>         Close            ();
       static Handle<Value>  Close            (const Arguments &args);
       static Handle<Value>  New              (const Arguments& args);

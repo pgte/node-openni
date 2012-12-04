@@ -188,6 +188,8 @@ namespace nodeopenni {
       if (this->users_[aUsers[i]])
       {
         for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
+
+          if (! this->joints_[j]) continue;
           
           // Load old values
           jointPos = &jointPositions_[i][j];
@@ -332,6 +334,7 @@ namespace nodeopenni {
   {
 
     this->emitSymbol_ = NODE_PSYMBOL("emit");
+    this->lengthSymbol_ = NODE_PSYMBOL("length");
 
     /// Initialize all joint positions to 0
     for (int i = 0; i < NODE_OPENNI_MAX_USERS; ++i)
@@ -352,7 +355,12 @@ namespace nodeopenni {
     for (int i = 0; i <= NODE_OPENNI_MAX_USERS; ++i)
     {
       this->users_[i] = FALSE;
-    }    
+    }
+
+    for (int j = 0; j <= NODE_OPENNI_JOINT_COUNT; ++j)
+    {
+      this->joints_[j] = TRUE;
+    }
 
     // Initialize Error
     this->lastError_.context = this;
@@ -381,6 +389,46 @@ namespace nodeopenni {
 
     return args.This();
   }
+
+
+  ///// SetJoints
+
+  Handle<Value>
+  Context::SetJoints(Local<Object>  array)
+  {
+    uint length = array->Get(this->lengthSymbol_)->Int32Value();
+    int jointPos = -1;
+    for(uint i = 0; i < length; i ++)
+    {
+      Local<String> jointName = array->Get(i)->ToString();
+      for(uint j = 0; j < NODE_OPENNI_JOINT_COUNT && jointPos < 0; j++) {
+        if (jointName->Equals(String::New(jointNames[j]))) {
+          jointPos = j;
+        }
+      }
+      if (jointPos >= 0) {
+        this->joints_[jointPos] = TRUE;
+      }
+      
+    }
+    return Undefined();
+  }
+
+  Handle<Value>
+  Context::SetJoints(const Arguments& args)
+  {
+    HandleScope scope;
+    if (args.Length() == 1) {
+      return GetContext(args)->SetJoints(args[0]->ToObject());
+    } else {
+      return ThrowException(Exception::RangeError(
+          String::New("joints argument must be an array")));
+    }
+    
+  }
+
+
+  ///// Close
 
   Handle<Value>
   Context::Close()
@@ -417,6 +465,7 @@ namespace nodeopenni {
     Local<FunctionTemplate> t = FunctionTemplate::New(New);
     t->InstanceTemplate()->SetInternalFieldCount(1);
 
+    NODE_SET_PROTOTYPE_METHOD(t, "setJoints", SetJoints);
     NODE_SET_PROTOTYPE_METHOD(t, "close", Close);
 
     target->Set(String::NewSymbol("Context"), t->GetFunction());
