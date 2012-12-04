@@ -205,7 +205,7 @@ namespace nodeopenni {
           this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
              aUsers[i], joints[j], newJointPos);
 
-          if (hasError(status)) return;
+          if (hasError(status)) continue;
 
           // discard unconfident changes
           if (newJointPos.fConfidence < 0.5) continue;
