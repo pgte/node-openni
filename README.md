@@ -87,7 +87,7 @@ var context = OpenNI();
 ].forEach(function(jointName) {
   
   context.on(jointName, function(user, x, y, z) {
-    console.log(jointName + ' if user %d moved to (%d, %d, %d)', user, x, y, z);
+    console.log(jointName + ' of user %d moved to (%d, %d, %d)', user, x, y, z);
   });
 
 });
