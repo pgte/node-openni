@@ -91,6 +91,7 @@ var context = OpenNI();
   });
 
 });
+```
 
 ## Close Context
 
