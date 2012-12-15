@@ -1,10 +1,10 @@
 {
   "name": "openni",
   "description": "",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": "Pedro Teixeira",
   "main": "openni.js",
-  "tags": ["kinect", "openni"],
+  "tags": ["kinect", "openni", "skeleton"],
   "scripts": {
     "preinstall": "node-gyp configure build"
   },
