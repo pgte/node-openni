@@ -1,7 +1,7 @@
 {
   "name": "openni",
   "description": "",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": "Pedro Teixeira",
   "main": "openni.js",
   "tags": ["kinect", "openni"],
