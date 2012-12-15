@@ -42,6 +42,7 @@ var context = OpenNI();
 ```js
 [
   'newuser',
+  'userexit',
   'lostuser',
   'posedetected',
   'calibrationstart',
