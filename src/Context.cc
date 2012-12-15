@@ -269,6 +269,10 @@ namespace nodeopenni {
     status = this->userGenerator_.RegisterUserCallbacks(
       User_NewUser, User_LostUser, this, this->userCallbackHandle_);
     if (hasError(status)) return error("registering user callbacks", status);
+    
+    status = this->userGenerator_.RegisterToUserExit(
+      User_UserExit, this, this->userExitCallbackHandle_);
+    if (hasError(status)) return error("registering user exit callbacks", status);
 
     status = this->userGenerator_.GetPoseDetectionCap().RegisterToPoseCallbacks(
       Pose_Detected, NULL, this, this->poseCallbackHandle_);

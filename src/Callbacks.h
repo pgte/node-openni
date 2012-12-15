@@ -9,6 +9,9 @@ namespace nodeopenni {
 
   void XN_CALLBACK_TYPE
   User_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie);
+  
+  void XN_CALLBACK_TYPE
+  User_UserExit(xn::UserGenerator& generator, XnUserID nId, void* pCookie);
 
   void XN_CALLBACK_TYPE
   Pose_Detected(xn::PoseDetectionCapability& pose, const XnChar* strPose,

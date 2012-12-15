@@ -60,6 +60,7 @@ namespace nodeopenni {
       
       xn::Context context_;
       XnCallbackHandle userCallbackHandle_;
+      XnCallbackHandle userExitCallbackHandle_;
       XnCallbackHandle poseCallbackHandle_;
       XnCallbackHandle calibrationCallbackHandle_;
       XnCallbackHandle jointConfigurationHandle_;

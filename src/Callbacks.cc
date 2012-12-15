@@ -30,6 +30,15 @@ namespace nodeopenni {
     printf("Lost user %d\n", nId);
     context->UserEventAsync("lostuser", nId);
   }
+  
+  void XN_CALLBACK_TYPE
+  User_UserExit(xn::UserGenerator& generator, XnUserID nId,
+                void* pCookie)
+  {
+    Context * context = (Context *) pCookie;
+    assert(context);
+    context->UserEventAsync("userexit", nId);
+  }
 
   void XN_CALLBACK_TYPE
   Pose_Detected(xn::PoseDetectionCapability& pose, const XnChar* strPose,
