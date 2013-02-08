@@ -6,8 +6,13 @@ Currently only supports one user, even though several users is easy to achieve w
 
 # Install
 
-1. Install libusb and OpenNI following the platform-specific instructions at https://github.com/OpenNI/OpenNI
-1. Fork this repo.
+Install libusb and OpenNI following the platform-specific instructions at https://github.com/OpenNI/OpenNI.
+
+(If you're having trouble with this installation, some users have reported that the simple-openni package installs these dependencies successfully:
+https://code.google.com/p/simple-openni/wiki/Installation
+)
+
+Then you will have to fork this repo:
 
 ```bash
 $ cd node-openni
