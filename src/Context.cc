@@ -152,7 +152,7 @@ namespace nodeopenni {
   }
 
   void
-  Context::InitPollThread() 
+  Context::InitPollThread()
   {
     uv_thread_create(&this->event_thread_, process_event_thread, this);
   }
@@ -171,7 +171,7 @@ namespace nodeopenni {
     XnUInt16 nUsers = 15;
 
     status = this->userGenerator_.GetUsers(aUsers, nUsers);
-    
+
     if (hasError(status)) {
       this->EmitAsyncError("getting users", status);
       return;
@@ -190,7 +190,7 @@ namespace nodeopenni {
         for (int j = 0; j < NODE_OPENNI_JOINT_COUNT; j++) {
 
           if (! this->joints_[j]) continue;
-          
+
           // Load old values
           jointPos = &jointPositions_[i][j];
 
@@ -202,7 +202,7 @@ namespace nodeopenni {
 
           // Skip if the callback is pending delivery
           if (callback->pending) continue;
-          
+
           // Get new values
           this->userGenerator_.GetSkeletonCap().GetSkeletonJointPosition(
              aUsers[i], joints[j], newJointPos);
@@ -269,7 +269,7 @@ namespace nodeopenni {
     status = this->userGenerator_.RegisterUserCallbacks(
       User_NewUser, User_LostUser, this, this->userCallbackHandle_);
     if (hasError(status)) return error("registering user callbacks", status);
-    
+
     status = this->userGenerator_.RegisterToUserExit(
       User_UserExit, this, this->userExitCallbackHandle_);
     if (hasError(status)) return error("registering user exit callbacks", status);
@@ -289,7 +289,7 @@ namespace nodeopenni {
     printf("Set skeleton profile.\n");
 
     ////// ---- Initialize Poll Loop
-    
+
     //// Initialize the async callbacks
 
     uv_loop_t *loop = uv_default_loop();
@@ -413,7 +413,7 @@ namespace nodeopenni {
       if (jointPos >= 0) {
         this->joints_[jointPos] = TRUE;
       }
-      
+
     }
     return Undefined();
   }
@@ -428,7 +428,7 @@ namespace nodeopenni {
       return ThrowException(Exception::RangeError(
           String::New("joints argument must be an array")));
     }
-    
+
   }
 
 
@@ -439,13 +439,13 @@ namespace nodeopenni {
   {
     /// Stop the loop
     this->running_ = false;
-    
+
     /// Shut down and release context
     this->context_.Shutdown();
     this->context_.Release();
 
     uv_thread_join(&this->event_thread_);
-    
+
     return Undefined();
   }
 
@@ -487,3 +487,6 @@ init(Handle<Object> target)
 {
   nodeopenni::Initialize(target);
 }
+
+NODE_MODULE(openni, init);
+

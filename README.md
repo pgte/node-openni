@@ -2,7 +2,7 @@
 
 OpenNI bindings in Node.js.
 
-Currently only supports one user, even though several users is easy to achieve with some small mods.
+Supports multiple users.
 
 # Install
 
@@ -30,7 +30,7 @@ $ node test/base
 ```
 
 Stay in the surrender position in front of the camera, a couple of meters away.
-After you're synced you should see 
+After you're synced you should see
 
 # Use
 
@@ -89,7 +89,7 @@ var context = OpenNI();
   "right_ankle",
   "right_foot"
 ].forEach(function(jointName) {
-  
+
   context.on(jointName, function(user, x, y, z) {
     console.log(jointName + ' of user %d moved to (%d, %d, %d)', user, x, y, z);
   });
@@ -104,7 +104,7 @@ var context = OpenNI();
 
 process.on('SIGINT', function() {
   context.close();
-  process.exit();  
+  process.exit();
 });
 ```
 

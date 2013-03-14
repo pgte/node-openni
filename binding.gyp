@@ -9,9 +9,24 @@
       'include_dirs': [
         '/usr/include/ni'
       ],
-      'libraries': [
-        'libOpenNI.dylib',
-      ],
+      'conditions': [
+        ['OS=="mac"', {
+            'link_settings': {
+                'libraries': [
+                    'libOpenNI.dylib'
+                ],
+            }
+          }
+        ],
+        ['OS=="linux"', {
+            'link_settings': {
+                'libraries': [
+                    '/usr/lib/libOpenNI.so'
+                ],
+            }
+          }
+        ]
+      ]
     }
   ]
 }
