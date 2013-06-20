@@ -38,6 +38,15 @@ namespace nodeopenni {
     void * context;
   };
 
+  struct ComPosEvent {
+    const char * type;
+    uint userId;
+    int x;
+    int y;
+    int z;
+    void * context;
+  };
+
   class Context : ObjectWrap {
 
     public:
@@ -52,6 +61,8 @@ namespace nodeopenni {
       void JointChangeEvent(void * jointPos);
       void UserEventAsync(const char * eventName, uint userId);
       void EmitUserEvent(UserEvent * userEvent);
+      void ComPosEventAsync(const char * eventName, uint userId, int x, int y, int z);
+      void EmitComPosEvent(ComPosEvent * comPosEvent);
       void EmitError(const char * message);
       void AddUser(uint userId);
       void RemoveUser(uint userId);
@@ -72,9 +83,11 @@ namespace nodeopenni {
       uv_async_t  uv_async_joint_change_callback_[NODE_OPENNI_MAX_USERS][NODE_OPENNI_JOINT_COUNT];
       uv_async_t  uv_async_error_callback_;
       uv_async_t  uv_async_user_event_callback_;
+      uv_async_t  uv_async_com_pos_event_callback_;
 
       bool        users_[NODE_OPENNI_MAX_USERS + 1];
       bool        joints_[NODE_OPENNI_JOINT_COUNT];
+      bool        comTracking_;
 
       Persistent<String> emitSymbol_;
       Persistent<String> lengthSymbol_;
@@ -82,6 +95,10 @@ namespace nodeopenni {
 
       static Context*       GetContext       (const Arguments &args);
       Handle<Value>         Init             ();
+      Handle<Value>         StartCOMTracking ();
+      static Handle<Value>  StartCOMTracking (const Arguments &args);
+      Handle<Value>         StopCOMTracking  ();
+      static Handle<Value>  StopCOMTracking (const Arguments &args);
       Handle<Value>         SetJoints        (Local<Object>  array);
       static Handle<Value>  SetJoints        (const Arguments &args);
       Handle<Value>         Close            ();
