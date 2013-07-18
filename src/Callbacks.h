@@ -28,7 +28,15 @@ namespace nodeopenni {
 
   void XN_CALLBACK_TYPE
   Joint_Configuration_Change(xn::ProductionNode &node, void* pCookie);
+  
+  void XN_CALLBACK_TYPE
+  Gesture_Recognized(xn::GestureGenerator& generator, const XnChar* strGesture,
+    const XnPoint3D* pIDPosition, const XnPoint3D* pEndPosition, void* pCookie);
 
+  void XN_CALLBACK_TYPE
+  Gesture_Process(xn::GestureGenerator& generator, const XnChar* strGesture, const XnPoint3D* pPosition, XnFloat fProgress, void* pCookie);
+  
+  
   // LibUV Callbacks
   static void async_joint_change_callback_(uv_async_t *handle, int notUsed);
 

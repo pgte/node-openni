@@ -21,6 +21,7 @@ namespace nodeopenni {
   "      <Mirror on=\"true\"/>\n"
   "    </Configuration>\n"
   "  </Node>\n"
+  "  <Node type=\"Gesture\" />\n"
   "</ProductionNodes>\n"
 "</OpenNI>\n";
 }

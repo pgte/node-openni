@@ -16,6 +16,7 @@
                 <MapOutputMode xRes="640" yRes="480" FPS="30"/>               
                 <Mirror on="true"/>                                               
             </Configuration>                                                      
-        </Node>                                                                 
+        </Node>
+        <Node type="Gesture" />                                                                 
     </ProductionNodes>                                                        
 </OpenNI>
