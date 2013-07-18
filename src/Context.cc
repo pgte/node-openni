@@ -311,12 +311,20 @@ namespace nodeopenni {
         uv_async_init(loop, &this->uv_async_joint_change_callback_[i][j], async_joint_change_callback_);
       }
     }
-
+    
+    this->gesture_generator_.Create(this->context_);
+    this->gesture_generator_.RegisterGestureCallbacks(Gesture_Recognized, Gesture_Process, this, this->gestureCallbackHandle_);
+    
+    
     // Start the joint pos polling thread
     this->InitPollThread();
 
     printf("initiated poll thread.\n");
-
+    
+    status = this->gesture_generator_.AddGesture("Click",this->boundingBox_);
+    status = this->gesture_generator_.AddGesture("Wave",this->boundingBox_);
+    if (hasError(status)) return error("registering gesture", status);
+    
     status = this->context_.StartGeneratingAll();
     if (hasError(status)) return error("starting to generate all", status);
 

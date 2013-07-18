@@ -59,11 +59,14 @@ namespace nodeopenni {
     private:
       
       xn::Context context_;
+      xn::GestureGenerator gesture_generator_;
       XnCallbackHandle userCallbackHandle_;
       XnCallbackHandle userExitCallbackHandle_;
       XnCallbackHandle poseCallbackHandle_;
       XnCallbackHandle calibrationCallbackHandle_;
       XnCallbackHandle jointConfigurationHandle_;
+      XnCallbackHandle gestureCallbackHandle_;
+      
 
       JointPos jointPositions_[NODE_OPENNI_MAX_USERS][NODE_OPENNI_JOINT_COUNT] ;
       OpenNIError lastError_;

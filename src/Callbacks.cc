@@ -83,6 +83,22 @@ namespace nodeopenni {
         nId);
     }
   }
+  
+  void XN_CALLBACK_TYPE
+  Gesture_Recognized(xn::GestureGenerator& generator, const XnChar* strGesture,
+  const XnPoint3D* pIDPosition, const XnPoint3D* pEndPosition, void* pCookie)
+  {
+    printf("Gesture recognized: %s\n", strGesture);
+    Context *context = (Context *) pCookie;
+    assert(context);
+    context->UserEventAsync(strGesture, 1);
+  }
+
+  void XN_CALLBACK_TYPE
+  Gesture_Process(xn::GestureGenerator& generator, const XnChar* strGesture, const XnPoint3D* pPosition, XnFloat fProgress, void* pCookie)
+  {
+    printf("Gesture process: %s\n", strGesture);
+  }
 
 }
 
