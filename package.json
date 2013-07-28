@@ -1,14 +1,14 @@
 {
   "name": "openni",
   "description": "",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "author": "Pedro Teixeira",
   "main": "openni.js",
   "tags": ["kinect", "openni", "skeleton"],
   "scripts": {
     "preinstall": "node-gyp configure build"
   },
-  "repository": 
+  "repository":
    { "type": "git",
      "url": "http://github.com/pgte/node-openni.git" }
 }
