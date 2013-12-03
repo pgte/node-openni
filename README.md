@@ -4,6 +4,14 @@ OpenNI bindings in Node.js.
 
 Supports multiple users.
 
+-----
+
+## Looking for maintainer(s)!!
+
+Ping the author if you're interested!
+
+-----
+
 # Install
 
 Install libusb and OpenNI following the platform-specific instructions at https://github.com/OpenNI/OpenNI.
