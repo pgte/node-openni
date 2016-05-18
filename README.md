@@ -1,3 +1,5 @@
+# Not maintained
+
 # node-openni
 
 OpenNI bindings in Node.js.
